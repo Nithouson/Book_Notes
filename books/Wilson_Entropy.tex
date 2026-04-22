@@ -1,0 +1,240 @@
+
+\chapter{城市与区域建模中的最大熵方法}
+\Large\textbf{Entropy in Urban and Regional Modelling}
+\par \emph{Alan Geoffrey Wilson} \normalsize
+
+\section{背景}
+\par 在本书之前，熵的概念主要用于非社会科学。本书表明了其在城市和区域建模中的应用价值. 
+\par 统计力学可以在不解释粒子微观行为的情况下解释气体系统的宏观性质；与之类比，空间交互模型在不解释个体出行行为的情况下解释宏观现象；二者都借助熵的概念与微观状态联系. 
+\par 空间交互系统可用OD表(origin-destination table)描述；各O-D对的个体集合构成系统的完整描述，称为系统的一种状态(state)；各O-D对的流量称为系统的一种（流量）分布(distribution). 状态是系统的微观描述，分布是宏观描述; 一阶流量的空间分布是更高层（信息量更少）的宏观描述. 假定状态是等概率的，可求出对应状态数最多（概率最大）的流量分布；这一状态数的对数即对应系统的熵，反映了系统微观状态的不确定性. 
+
+\par 从概率论视角，离散概率分布$P(X=x_i)=p_i,i=1,\dots, n$的熵定义为
+\begin{equation}
+    S(p_1,\dots,p_n)=-k\sum_i p_i\ln p_i
+\end{equation}
+给定已知约束估计概率分布时，最大化熵的假设不引入额外的偏置（其它结果意味着缺乏根据地减少不确定度）. 另一方面，令$h(X)=\ln P(X)$, 对数似然的期望$\mathrm{E}h(X)=\sum_i p_i \ln p_i$恰为熵的负值. 在最大似然估计中，随着样本量增大, 对数似然函数的均值依大数律收敛于期望, 估计的结果是不确定度最小的分布，这与前述信息不足的情形恰好相反. 
+\par 设已知条件为$\mathrm{E} f(X)=\sum_i p_if(x_i)$，用Lagrange乘子法最大化熵得到\begin{equation}
+    p_i=\frac{e^{-\mu f(x_i)}}{\sum_i e^{-\mu f(x_i)}}
+\end{equation}
+其中乘子$\mu$根据$\mathrm{E} f(X)$的值确定. 若$\mathrm{E} f(X)$的值未知，可采用统计学参数估计方法拟合\footnote{此时$f(x)$的选取是需要考虑的因素，一种方式是选取在系统中有重要含义的量. }; 在这种情况下，最大熵方法的作用是给出$p_i$的函数形式; 引入更多已知条件（约束）对应增加模型参数. 
+
+\par \textbf{熵与微观状态数的关系}. 设有$n$种离散状态，$T$个个体的分布$\{T_i\}_{i=1}^n$（$\sum_i T_i=T$）对应的微观状态数为$\mathcal{W}(\{T_i\})=T!/\prod_i T_i!$. 记$p_i=T_i/T$, 由Stirling公式，有
+\begin{align}
+\ln\mathcal{W}(\{T_i\})&\approx \ln T!-\sum_i (T_i\ln T_i-T_i)\notag\\
+&= (\ln T!+T-T\ln T) - T\sum p_i\ln p_i
+\end{align}
+因此熵与微观状态数的对数近似线性相关. 
+
+\par 本书主要关注最大熵方法在模型（假设）构建\footnote{Hypotheis和Model作为同义词使用；Theory是经过检验的Hypothesis. }、现有理论解释、系统动力学研究三个方面的应用. 
+
+\section{交通模型}
+
+\par 交通模型包含四个子模型：行程生成(trip generation)、行程分布(trip distribution)、交通方式选择(mode choice)、路线分配(route assignment). 行程生成得出一阶流入量或流出量的分布；行程分布得出二阶流量. 最大熵方法应用于行程分布和交通方式选择.
+
+\subsection{重力模型}
+
+\par 给定一阶流量的空间分布$\{O_i\},\{D_j\}$和总出行费用$C$, 并记$c_{ij}$为$i$到$j$的出行费用. 记$T=\sum_{i,j}T_{ij}$, $\{T_{ij}\}$对应的状态数为
+\begin{equation}
+    \mathcal{W}(\{T_{ij}\})=\frac{T!}{\prod_{i,j}T_{ij}!}
+\end{equation} 
+流量分布$\{T_{ij}\}$的约束为
+\begin{align}
+    \sum_j T_{ij}&=O_i\\
+    \sum_i T_{ij}&=D_j\\
+    \sum_{i,j} T_{ij}c_{ij}&=C
+\end{align}
+在上述约束下，使用Lagrange乘子法最大化$\ln \mathcal{W}(\{T_{ij}\})$,
+\begin{equation}
+    \mathcal{L}=\ln T!-\sum_{i,j}\ln T_{ij}!+\sum_i \lambda_i (O_i-\sum_j T_{ij})+\sum_j \mu_j (D_j-\sum_i T_{ij}) +\beta (C-\sum_{i,j}T_{ij}c_{ij})
+\end{equation}
+使用Stirling近似公式\footnote{Stirling近似对较小值不成立的问题不是本质的，使用熵的概率定义而不借助该近似也能导出同样结果. 事实上，令$S=-\sum_{i,j}T_{ij}\ln(T_{ij}/T)=T\ln T-\sum_{i,j}T_{ij}\ln T_{ij}$, $S$对$T_{ij}$的偏导为$-\ln T_{ij}-1$，$-1$在结果中只影响常数项.}有$\mathrm{d}\ln N!\approx \ln N \mathrm{d}N$, 
+\begin{equation}
+    \frac{\partial \mathcal{L}}{\partial T_{ij}}=-\ln T_{ij}-\lambda_i-\mu_j -\beta c_{ij}
+\end{equation}
+因此极值条件为
+\begin{equation}
+    T_{ij}=e^{-\lambda_i-\mu_j-\beta c_{ij}}
+\end{equation}
+令$A_i=e^{-\lambda_i}/O_i$, $B_j=e^{-\mu_j}/D_j$, 结合流入、流出量约束即得到双边约束的重力模型
+\begin{align}
+    T_{ij}&=A_iB_jO_iD_j e^{-\beta c_{ij}}\\
+    A_i &= \left(\sum_j B_jD_j e^{-\beta c_{ij}}\right)^{-1}\\
+    B_j &= \left(\sum_i A_iO_ie^{-\beta c_{ij}}\right)^{-1}
+\end{align}
+通常$C$未知，$\beta$依据流量数据估计\footnote{上述推导对保留或去除到自身的流($T_{ii}$)都适用. }. \emph{引入的约束是否合理可能影响导出模型的有效性. 作者的讨论限定于相对同质人群的通勤流，基于Marchetti常数认为总时间成本守恒是合理的；相应如果将$c_{ij}$解读为地理距离则不尽合理；非通勤流的情况也可能更复杂. } 
+\par 上述方法与统计物理中的微正则系综(microcanonical ensemble)相关. Dieter认为双约束重力模型中的$A_i, B_j$代表了起终点处的成本. 最大熵方法不支持这一结论，因为将$c_{ij}$改写为$a_i+b_j+c_{ij}$, 模型仍包含$A_i,B_j$项. 
+\par 考虑$\ln \mathcal{W}$在最大熵分布处的二阶Taylor展开， 
+\begin{align}
+    \Delta \ln \mathcal{W}&= \frac{1}{2}\sum_{i,j}\frac{\partial^2 \ln W}{\partial T_{ij}^2} (\Delta T_{ij})^2\notag\\
+    &= -\frac{1}{2}\sum_{i,j} T_{ij}\left(\frac{\Delta T_{ij}}{T_{ij}}\right)^2
+\end{align}
+设每个$\frac{\Delta T_{ij}}{T_{ij}}$均为$p$，$\ln \mathcal{W}$变化量为$-\frac{1}{2}p^2T$. \emph{作者以此说明最大熵分布是尖锐的极值（如$T=3\times 10^7, p=10^{-3}, \Delta \ln \mathcal{W}=-15$），但忽略了当$T$非常大时，$W$本身的量级也是巨大的. }
+
+\par 上述结果并不意味着负指数是唯一正确的距离衰减形式，因为实际成本与测量成本间可能存在转换函数. 例如以$\ln c_{ij}$代替$c_{ij}$即得到幂律衰减. \emph{这意味着，在人类移动受成本约束的幂律衰减的实证结果暗示对数距离比距离更接近人群移动中的成本的含义. } 
+
+\subsection{广义重力模型}
+
+\par 模型有必要区分不同交通方式，以及可选交通方式不同的人群（如是否拥有小汽车）. 在原有记号基础上，设$T_{ij}^{(kn)}$为人群$n$中以交通方式$k$从$i$到$j$的人数，$c_{ij}^{(k)}$为交通方式$k$下的出行成本，$M(n)$为人群$n$可选交通方式的集合. 考虑如下约束：
+\begin{align}
+    \sum_j \sum_{k\in M(n)}T_{ij}^{(kn)}&=O_i^{(n)}\\
+    \sum_i \sum_n \sum_{k\in M(n)} T_{ij}^{(kn)}&=D_j\\
+    \sum_{i,j} \sum_{k\in M(n)} T_{ij}^{(kn)}c_{ij}^{(k)}&=C^{(n)}
+\end{align}
+最大化$\ln \frac{T!}{\prod_{i,j}\prod_n \prod_{k\in M(n)}T_{ij}^{(kn)}!}$给出
+\begin{align}
+    T_{ij}^{(kn)}&=A_i^{(n)}B_jO_i^{(n)}D_j e^{-\beta^{(n)} c_{ij}^{(k)}}\\
+    A_i^{(n)} &= \left(\sum_j\sum_{k\in M(n)}  B_jD_j e^{-\beta^{(n)} c_{ij}^{(k)}}\right)^{-1}\\
+    B_j &= \left(\sum_i \sum_n \sum_{k\in M(n)}A_i^{(n)}O_i^{(n)} e^{-\beta^{(n)} c_{ij}^{(k)}}\right)^{-1}
+\end{align}
+这给出选择交通方式$k$的比例为
+\begin{equation}
+    \frac{1}{1+\sum_{k'\in M(n), k'\neq k}e^{-\beta^{(n)} (c_{ij}^{(k')}-c_{ij}^{(k)})}}
+    \label{eq:modesplit}
+\end{equation}
+该模型中$\beta^{(n)}$反映了人群$n$在选择交通方式、目的地时对花费的敏感程度\footnote{若希望两种选择对应不同的衰减系数，可先按照(\ref{eq:groupalt})分配目的地，再以出行成本为约束将每个$T_{ij}^{(n)}$分配到不同交通方式，得到类似(\ref{eq:modesplit})的表达式. 两步所用成本可以取$c_{ij}^{(n)}=\min_{k\in M(n)} c_{ij}^{(k)}$, 或$c_{ij}^{(n)}=(\sum_{k\in M(n)} w_{ij}^{(k)} c_{ij}^{(k)})/(\sum_{k\in M(n)} w_{ij}^{(k)})$, 其中$w_{ij}^{(k)}$为$i$到$j$流量中交通方式$k$的占比, 通过迭代法计算. 类似的方法可用于将$T_{ij}^{(n)}$或$T_{ij}^{(kn)}$分配到不同路径; 两种模型的实证结果可验证模式在出行行为中的心理学意义. }. 
+\par 对不同人群聚合（或不区分人群时），模型简化为
+\begin{align}
+    T_{ij}^{(k)}&=A_iB_jO_iD_j e^{-\beta c_{ij}^{(k)}}\\
+    A_i &= \left(\sum_j\sum_k  B_jD_j e^{-\beta c_{ij}^{(k)}}\right)^{-1}\\
+    B_j &= \left(\sum_i \sum_k A_iO_i e^{-\beta c_{ij}^{(k)}}\right)^{-1}
+\end{align}
+
+对不同交通方式聚合，模型简化为
+\begin{align}
+    T_{ij}^{(n)}&=A_i^{(n)}B_jO_i^{(n)}D_j \sum_{k\in M(n)} e^{-\beta^{(n)} c_{ij}^{(k)}}\\
+    A_i^{(n)} &= \left(\sum_jB_jD_j \sum_{k\in M(n)}  e^{-\beta^{(n)} c_{ij}^{(k)}}\right)^{-1}\\
+    B_j &= \left(\sum_i \sum_n A_i^{(n)}O_i^{(n)} \sum_{k\in M(n)} e^{-\beta^{(n)} c_{ij}^{(k)}}\right)^{-1}
+\end{align}
+另一种约束方式是
+\begin{align}
+    \sum_j T_{ij}^{(n)}&=O_i^{(n)}\\
+    \sum_i \sum_n T_{ij}^{(n)}&=D_j\\
+    \sum_{i,j} T_{ij}^{(n)}c_{ij}^{(n)} &=C^{(n)}
+\end{align}
+其中$c_{ij}^{(n)}$是人群$n$感知的出行成本. 由此得到模型
+\begin{align}
+    T_{ij}^{(n)}&=A_i^{(n)}B_jO_i^{(n)}D_j e^{-\beta^{(n)} c_{ij}^{(n)}} \label{eq:groupalt}\\
+    A_i^{(n)} &= \left(\sum_jB_jD_j e^{-\beta^{(n)} c_{ij}^{(n)}}\right)^{-1}\\
+    B_j &= \left(\sum_i \sum_n A_i^{(n)}O_i^{(n)} e^{-\beta^{(n)} c_{ij}^{(n)}}\right)^{-1}
+\end{align}
+以上两个模型的对比给出多种交通方式复合成本的一种表达式\footnote{两式中$\beta^{(n)}$可能不同，这里取相等值使之单位一致；乘积因子$\vert M(n)\vert$的引入保证了$c_{ij}^{(n)}$非负. }
+\begin{equation}
+    c_{ij}^{(n)}=\frac{\ln \vert M(n)\vert-\ln \sum_{k\in M(n)}e^{-\beta^{(n)} c_{ij}^{(k)}}}{\beta^{(n)}}
+\end{equation}
+
+\subsection{中介机会模型}
+
+\par 记$S_j$为$j$地的机会数. 对起点$i$，将目的地按阻力从小到大排序，记为$j_1,\dots,j_{N-1}$.  假设个体按该顺序选择目的地，到$j_\mu$依然无法满足需求的概率为$U_{ij_\mu}$, 并设
+\begin{equation}
+    U_{ij_\mu}= \prod_{k=1}^\mu (1-LS_{j_k})
+\end{equation}
+又设$A_{j_\mu}=\sum_{k=1}^\mu S_{j_k}$, 有
+\begin{equation}
+    \frac{U_{ij_\mu}-U_{ij_{\mu-1}}}{U_{ij_{\mu-1}}}=-L(A_{j_\mu}-A_{j_{\mu-1}})
+\end{equation}
+不严格地，有
+\begin{equation}
+    \frac{\mathrm{d}U}{U}=-L\mathrm{d}A
+\end{equation}
+因此导出中介机会模型
+\begin{align}
+    U_{ij_\mu}&=k_i e^{-LA_{j_\mu}}\\
+    T_{ij_\mu}&=O_i(U_{ij_{\mu-1}}-U_{ij_\mu})\notag\\
+    &=k_iO_i(e^{-LA_{j_{\mu-1}}}-e^{-LA_{j_\mu}})
+\end{align}
+取$k_i=1/(1-e^{LA_{j_{N-1}}})$可保持流出量，事实上通常$1/(1-e^{LA_{j_{N-1}}})\approx 1$.
+\par \emph{本书试图用最大熵方法导出中介机会模型，但目标函数定义不正确，使用的成本约束也不合理。}
+
+\section{商品流模型}
+
+\par 考虑一类商品$m$（相应变量用上标$(m)$表示，讨论单一商品时略去）, 记$x_{ij}$为区域$i$生产、区域$j$消费（包括用于生产或终端消费）该商品的量; $c_{ij}$为运输一单位该商品的平均费用; $X_i, Y_i$分别为区域$i$生产、消费该商品的总量, $X=\sum_i X_i=\sum_j Y_j$. 
+
+\subsection{重力模型}
+\par 商品流的重力模型可表达为
+\begin{equation}
+x_{ij}=KX_iY_if(c_{ij})
+\end{equation}
+其中$K=X/(\sum_{i,j} X_iY_jf(c_{ij}))$, 不同商品的$f$可能不同. 当$X_i, Y_i$均为已知，估计值可直接计算；否则需要用$\sum_{j}x_{ij}$($\sum_{i}x_{ij}$)代替$X_i$($Y_j$)，此时模型求解需要迭代法. 
+\par 对于$\{X_i\}$或$\{Y_i\}$为已知值的情形，估计的一阶流量不一定与已知值一致. 添加下列约束及其组合
+\begin{align}
+    \sum_j x_{ij} &= X_i\\
+    \sum_i x_{ij} &= Y_j
+\end{align}
+依次得到生产约束、吸引约束、双边约束的重力模型. 注意$\{X_i\}$或$\{Y_i\}$已知才能添加对应的约束；否则根据前述变量替代操作，约束自然满足. 此外，模型中的$X_i$,$Y_j$可以增加幂次参数，但仅限相应变量未出现在约束中的情形.
+\par 生产约束模型(production-constrained):
+\begin{align}
+    x_{ij}&=A_iX_iY_jf(c_{ij})\\
+    A_i&=\left(\sum_j Y_jf(c_{ij})\right)^{-1}
+\end{align}
+\par 吸引约束模型(attraction-constrained):
+\begin{align}
+    x_{ij}&=B_jX_iY_jf(c_{ij})\\
+    B_j&=\left(\sum_i X_if(c_{ij})\right)^{-1}
+\end{align}
+\par 双边约束模型(production-attraction-constrained):
+\begin{align}
+    x_{ij}&=A_iB_jX_iY_jf(c_{ij})\\
+    A_i&=\left(\sum_j B_jY_jf(c_{ij})\right)^{-1}\\
+    B_j&=\left(\sum_i A_iX_if(c_{ij})\right)^{-1}
+\end{align}
+
+\par 双边约束模型可通过最大熵方法导出，步骤与交通流中的重力模型相同. 对单边约束模型，以生产约束为例，最大熵方法给出
+\begin{align}
+    x_{ij}&=A_iX_ie^{-\mu c_{ij}}\\
+    A_i&=\left(\sum_j e^{-\mu c_{ij}}\right)^{-1}
+\end{align}
+将$c_{ij}$改写为$c_{ij}-v_j$, $v_j$为区域$j$消费一单位商品（相对于其它区域）的效益；再用消费规模作为效益的代理量，令$\mu v_j=\alpha \ln Y_j$，即得所求模型（$\alpha$为$Y_j$的幂次参数）. 无约束模型可通过同时引入生产、消费端的效益导出. 
+
+\par 经济学文献中出现过与重力模型类似的形式(如Theil)
+\begin{equation}
+    x_{ij}=\frac{X_iY_j}{X} Q_{ij}, Q_{ij}=\frac{x_{ij}' X'}{X_i'Y_j'}
+    \label{eq:econ_grav}
+\end{equation}
+其中$x_{ij}', X_i', Y_j', X'$为历史数据. 
+
+\subsection{投入产出模型}
+
+\par 考虑单一区域中的商品部门$1,2\dots,n,\dots$, 设生产的商品$m$对商品$n$的输出为$Z^{(mn)}$, 终端消费量（含出口）为$y^{(m)}$, 则有
+\begin{equation}
+    \sum_n Z^{(mn)}+y^{(m)}=X^{(m)}
+\end{equation}
+设生产一单位商品$n$需要的商品$m$为已知的常数$a_{mn}$, 即$Z^{(mn)}=a_{mn}X^{(n)}$, 我们得到
+\begin{equation}
+    \sum_n a_{mn}X^{(n)}+y^{(m)}=X^{(m)}
+\end{equation}
+其矩阵形式为$X=(I-a)^{-1}y$. 
+\par Leontief和Strout将上述框架扩展到多区域:
+\begin{equation}
+    Y_i^{(m)}=\sum_n a_{mn}^{i} X_i^{(n)}+y_i^{(m)}
+\end{equation}
+其中$X_i^{(m)}, Y_i^{(m)}$分别为区域$i$生产、消费商品$m$的总量，$y_i^{(m)}$为终端消费量\footnote{他们假定$X_i^{(m)}, Y_i^{(m)}, X^{(m)}$均未知，通过对$x_{ij}^{(m)}$求和得到. 设商品数为$M$, 区域数为$L$, 式(\ref{eq:econ_grav})除$i=j$的情形给出$ML(L-1)$个约束，加上$ML$个投入产出关系，恰与未知数数量相同. }. 
+\par 本书通过最大熵方法实现重力模型与投入产出模型的结合. 在Leontief-Strout约束基础上加入成本约束
+\begin{equation}
+\sum_{i,j} x_{ij}^{(m)} c_{ij}^{(m)}=C^{(m)}
+\end{equation}
+以及已知生产、消费总量时可选的约束
+\begin{align}
+    \sum_j x_{ij}^{(m)} &= X_i^{(m)}\\
+    \sum_i x_{ij}^{(m)} &= Y_j^{(m)}
+\end{align}
+可导出无约束、单边约束、双边约束的重力-投入产出模型. 无约束模型: 
+\begin{align}
+x_{ij}^{(m)}&=\delta_i^{(m)} \epsilon_j^{(m)} e^{-\mu^{(m)} c_{ij}^{(m)}}\\
+\delta_i^{(m)}&=\prod_n \left(\epsilon_i^{(n)}\right)^{-a_{mn}^{i}}\\
+\epsilon_i^{(m)}&=\frac{y_i^{(m)}+\sum_n a_{mn}^i \delta_i^{(n)} \sum_j \epsilon_j^{(n)}e^{-\mu^{(n)}c_{ij}^{(n)}}}{\sum_j \delta_j^{(m)} e^{-\mu^{(m)}c_{ji}^{(m)}}}
+\end{align}
+其中$\delta,\epsilon$需要迭代求解. 
+\par 生产约束模型:
+\begin{align}
+x_{ij}^{(m)}&=A_i^{(m)}X_i^{(m)} \epsilon_j^{(m)} e^{-\mu^{(m)} c_{ij}^{(m)}}\\
+A_i^{(m)}&=\left(\sum_j \epsilon_j^{(m)} e^{-\mu^{(m)} c_{ij}^{(m)}}\right)^{-1}\\
+\epsilon_i^{(m)}&=\frac{y_i^{(m)}+\sum_n a_{mn}^i X_i^{(n)}}{\sum_j A_j^{(m)}X_j^{(m)} e^{-\mu^{(m)}c_{ji}^{(m)}}}
+\end{align}
+\par 吸引约束模型:
+\begin{align}
+&x_{ij}^{(m)}=\delta_i^{(m)}B_j^{(m)}Y_j^{(m)}  e^{-\mu^{(m)} c_{ij}^{(m)}}\\
+&B_j^{(m)}=\left(\sum_i \delta_i^{(m)} e^{-\mu^{(m)} c_{ij}^{(m)}}\right)^{-1}\\
+&\sum_n a_{mn}^i \delta_i^{(n)}\sum_j B_j^{(n)}Y_j^{(n)}e^{-\mu^{(n)} c_{ij}^{(n)}}=Y_i^{(m)}-y_i^{(m)}
+\end{align} 
+\par 对于双约束的情形，Leontief-Strout约束已不含$x_{ij}^{(m)}$项，而成为已知量应满足的条件. 这意味着重力模型和投入产出模型已经解耦，可用单一商品的重力模型估计流量. 
+\par 考虑到不同商品的特性，可以进一步将商品分为四类，依次采用无约束、生产约束、吸引约束、双约束，用最大熵方法导出复合重力-投入产出模型.

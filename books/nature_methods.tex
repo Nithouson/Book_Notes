@@ -1,0 +1,22 @@
+
+\chapter{Nature Methods方法简介}
+
+\section{Association, correlation and causation}
+\par ``Correlation implies association, but not causation. Causation implies association, but not
+correlation.''
+\par 关联（Association）与依赖（Dependence）同义，指变量之间不独立。有因果关系一定不独立，但不一定表现出相关性（如$y=x^2$）。相关性是关联的一种，不能推出因果是由于可能存在混淆变量（与自变量、因变量都相关）。
+\par Pearson相关系数度量线性相关关系，Spearman相关系数度量增减趋势。\emph{后者也可以用在间隔量、比率量，即用排名做Pearson相关，这比原始数据的Pearson相关更宽松。} Pearson相关系数的统计显著性用t分布做检验；也可以利用方差分析得出自变量解释了因变量多大部分的变异。
+
+
+\section{Quantile regression}
+
+\par 线性回归关注因变量的均值，而分位数回归(QR)可刻画因变量极端值与自变量的关系. QR不依赖对因变量分布的假设, 适用于因变量偏态分布或存在异方差性的情形. QR的优化目标为
+\begin{equation}
+    \min\limits_\beta (Y_i-X_i\beta)(\tau-I[Y_i<X_i\beta])
+\end{equation}
+其中$\tau$为关注的分位数. $\tau=0.5$时上式等价于L1 loss. 通常用数值优化方法求解。
+
+\par 识别是否需要用QR代替均值回归：（1）比较均值回归的预测区间和相应QR结果，差异指示均值回归假设不满足（如异方差性，偏态分布等）；（2）计算不同分位数下的QR回归系数，差异指示需要使用QR. 
+
+\par 对于较为极端的分位数（如1\%, 99\%），通常需要较大的样本量才能准确估计。线性QR可能出现分位数交叉(quantile crossing)，即拟合模型后不同分位数的回归线交叉，指示模型误设（如非线性关系）。联合QR (Joint QR)解决了这一问题。
+

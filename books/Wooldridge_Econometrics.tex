@@ -1,0 +1,404 @@
+\chapter{计量经济学导论：现代观点}
+\Large\textbf{Introductory Econometrics: A Modern Approach}
+\par \emph{Jeffrey M. Wooldridge} \normalsize
+
+\section{导论}
+
+\par 计量经济学是数理统计的一个分支，主要研究\textbf{非实验经济数据}收集与分析的固有问题。非实验数据(non-experimental data)也称观测数据(observational data)，区别于（自然科学中）控制实验得到的数据，强调研究者只是被动的数据收集者。
+
+\par 计量模型中自变量的识别依据经济理论或直觉。\textbf{误差项}(error term)或干扰项(disturbance term)包含了不可观测及未识别的变量，以及度量自变量时的误差。
+
+\par 数据集分类：(1)\textbf{横截面数据}(cross-sectional data)， 同一时间段（或不考虑时间差异）多个样本，通常假定是随机抽样得到（即样本独立同分布）。(2)\textbf{时间序列数据}(time series data)，一个或多个变量不同时间的观测值，一般不能假定观测独立于时间，需考虑自相关、季节效应等。(3)\textbf{混合横截面数据}(pooled cross-section data)，多个时间段横截面数据的组合（每个时间段对应不同随机样本）。(4)\textbf{面板数据}(panel data)，多个样本的时间序列，区别于混合横截面数据，每个单元都被重复观测；可以控制观测单元无法观测的特征，有助于因果推断和时间滞后的研究。
+
+\par 研究两个变量的关系时往往需要其它（相关）因素不变(ceteris paribus)；退一步的要求是所关注自变量的选择独立于其它相关因素，从而可以视为实验数据。非实验数据的特征导致难以达到识别因果效应(casual effect)的目标。
+
+\section{横截面数据的线性回归模型}
+
+\subsection{模型假定}
+\par \textbf{(1)线性于参数}：总体模型为
+\begin{equation}
+    y=\beta_0+\beta_1 x_1+\dots+\beta_k x_k +u
+\end{equation}
+其中$\beta_0$称截距(intercept)，$\beta_j(j=1,\dots,k)$称斜率参数(slope parameter)，$u$为误差项。
+\par 这一模型称为多元线性回归(multiple linear regression)模型；当$k=1$时，称为简单线性回归(simple linear regression)模型。
+
+\par \textbf{(2)随机抽样}：设有来自上述总体模型的含$n$个观测的随机样本$\{(x_{i1}, \dots, x_{ik}, y_i)\}_{i=1}^N$，也即每个样本满足
+\begin{equation}
+    y_i=\beta_0+\beta_1 x_{i1}+\dots+\beta_k x_{ik} +u_i.
+\end{equation}
+
+\par \textbf{(3)不存在完全共线性}：样本中没有一个自变量是常数，自变量之间也没有严格线性关系。
+\par 这一假定保证了普通最小二乘法(ordinary least squares, OLS)估计的存在唯一性。假定的成立必要条件是样本容量$n\ge k+1$。自变量之间的非线性依赖关系是被允许的。
+
+\par \textbf{(4)零条件均值}：给定自变量任何值，误差期望为0.
+\begin{equation}
+    E(u\vert x_1, \dots, x_k)=0.
+\end{equation}
+\par 这一假定保证了OLS参数估计的无偏性。自变量与误差独立是一个更强的条件。违背此假定的情形包括因变量与自变量关系的误设（如应为二次函数但模型未包括二次项）、遗漏变量（且该变量与任一自变量相关）等。
+\par 假定(1)(4)可写成
+\begin{equation}
+    E(y\vert x_1,\dots,x_k)=\beta_0+\beta_1 x_1+\dots+\beta_k x_k \label{eq:prf}
+\end{equation}
+这称为总体回归函数(population regression function)。
+
+\par \textbf{(4')零均值和零相关}：对$j=1,2,\dots,k$,
+\begin{equation}
+    Eu=0, \text{Cov}(x_j,u)=0
+\end{equation}
+(4)蕴含(4'). 这一假设与OLS一阶条件对应。(1)-(3),(4')即可得到OLS估计量的一致性，但不能保证无偏性；且得不到总体回归函数(\ref{eq:prf})。若某个自变量$x_j$与$u$相关，称为\textbf{内生解释变量}(endogenous explanatory variable)。
+
+\par \textbf{(5)同方差性(homoskedasticity)}：给定自变量任何值，误差方差相同，
+\begin{equation}
+    \text{Var}(u\vert x_1, \dots, x_k)=\sigma^2
+\end{equation}
+也即$\text{Var}(y\vert x_1, \dots, x_k)=\sigma^2$。误差方差随自变量变化，称为异方差性(heteroskedasticity)。
+\par 假设(1)-(5)称为横截面数据回归的Gauss-Markov假定。
+
+\par \textbf{(6)正态性}：总体误差$u$独立于解释变量$x_1,\dots,x_k$，且服从均值为0、方差为$\sigma^2$的正态分布。
+\par 这一假设蕴含(4)(5)，用于得到OLS斜率估计值的抽样分布，从而进行假设检验和置信区间估计。该假定的依据可以来自中心极限定理，但要求误差是众多独立同分布随机因素的和（事实上各因素总体分布也可以不一致，但会影响正态近似的程度）。
+
+\par (1)-(6)合称为经典线性模型(classical linear model, CLM)假设。CLM总体假定可表述为
+\begin{equation}
+    y\vert x_1,\dots x_k \sim N(\beta_0+\beta_1x_1+\dots+\beta_kx_k,\sigma^2)
+\end{equation}
+
+\subsection{最小二乘法}
+
+\par 给定自变量、因变量的一个样本，被估计的方程，即样本回归函数(sample regression function)形如
+\begin{equation}
+    \hat{y}=\hat{\beta}_0+\hat{\beta}_1 x_1+\dots+\hat{\beta}_k x_k
+\end{equation}
+其中$\hat{\beta}_0$称截距估计值(intercept estimate)；$\hat{\beta}_j(j=1,\dots,k)$称斜率估计值(slope estimate)，代表了其它变量不变时$x_j$对$y$的偏效应(partial effect)。观测$i$的拟合值为
+\begin{equation}
+    \hat{y}_i=\hat{\beta}_0+\hat{\beta}_1 x_{i1}+\dots+\hat{\beta}_k x_{ik}
+\end{equation}
+残差(residual)定义为
+\begin{equation}
+    \hat{u}_i = y_i-\hat{y}_i.
+\end{equation}
+区别于不可观测的误差，残差是可以计算得到的。普通最小二乘法最小化残差平方和，得到如下一阶条件(first order conditions):
+\begin{align}
+    &\sum_{i=1}^N \hat{u}_i=0\\
+    &\sum_{i=1}^N \hat{u}_ix_{ij}=0, j=1,\dots,k
+\end{align}
+这也可以由零条件均值假设推出：上式为$Eu=0, E(x_ju)=0$在样本中的对应。
+
+\par 斜率估计值的一个公式为
+\begin{equation}
+\hat{\beta}_j=\frac{\sum_{i=1}^n \hat{r}_{ij}y_i}{\sum_{i=1}^n \hat{r}_{ij}^2}
+\label{eq:slope}
+\end{equation}
+其中$\hat{r}_{ij}$为$x_j$对$x_1,\dots,x_{j-1},x_{j+1},\dots,x_k$的回归残差。特别地，对于简单线性回归，斜率估计值
+\begin{equation}
+\hat{\beta}=\frac{\sum_{i=1}^n (x_i-\bar{x})y_i}{\sum_{i=1}^n (x_i-\bar{x})^2}=\frac{\mathrm{Cov}(x,y)}{\mathrm{Var}(x)}
+\end{equation}
+式(\ref{eq:slope})右端即$y$对$\hat{r}_{j}$进行简单线性回归的斜率估计，表明多元回归度量了“排除其他变量影响”时的关系。
+
+\par 定义总平方和(total sum of squares, SST), 解释平方和(explained sum of squares, SSE), 残差平方和(sum of squared residuals, SSR)如下:
+\begin{align}
+    \text{SST}&=\sum_{i=1}^n (y_i-\bar{y})^2=\sum_{i=1}^n y_i^2-n\bar{y}^2\\
+    \text{SSE}&=\sum_{i=1}^n (\hat{y}_i-\bar{y})^2=\sum_{i=1}^n \hat{y}_i^2-n\bar{y}^2\\
+    \text{SSR}&=\sum_{i=1}^n \hat{u}_i^2
+\end{align}
+可以证明SST=SSR+SSE。定义决定系数(coefficient of determination，R-squared，$R^2$)：
+\begin{equation}
+    R^2=1-\text{SSR}/\text{SST}\label{eq:Rsquared}
+\end{equation}
+$R^2$同时是实际值$y_i$和拟合值$\hat{y}_i$相关系数的平方。注意这只对于线性回归成立，在其它模型下，二者可能不同；按式(\ref{eq:Rsquared})计算，$R^2$可能为负；但按相关系数平方计算，$R^2$总在[0,1]中。
+
+\par 在方程中增加一个自变量，通常总会使$R^2$增大；调整$R^2$(adjusted R-squared)对自变量个数进行了惩罚：
+\begin{equation}
+    \bar{R}^2=1-\frac{\text{SSR}/(n-k-1)}{\text{SST}/(n-1)}\label{eq:adjustedR2}
+\end{equation}
+事实上，增加一个（一组）自变量时，调整$R^2$增加当且仅当其$t$统计量（$F$统计量）大于1。此定义的依据是，设总体$R^2$为$1-\sigma_u^2/\sigma_y^2$，即总体中$y$的变化可被自变量解释的部分；(\ref{eq:adjustedR2})第二项的分子、分母分别是$\sigma_u^2,\sigma_y^2$的无偏估计。但事实上调整$R^2$并不是一个无偏估计量。调整$R^2$也可能为负。对于两个非嵌套模型(non-nested model，即没有一个是另一个的特殊情况)，可用调整$R^2$进行模型选择。
+
+\subsection{OLS估计量的期望、方差}
+
+\par 在假定(1)-(4)下，OLS估计量是总体参数的无偏估计量，即
+\begin{equation}
+    E(\hat{\beta}_j)=\beta_j, j=0,1,\dots,k
+\end{equation}
+\par 在假定(1)-(5)下，OLS斜率估计量以自变量为条件的方差为
+\begin{equation}
+    \text{Var}(\hat{\beta}_j)=\frac{\sigma^2}{\text{SST}_j (1-R_j^2)}, j=0,1,\dots,k \label{eq:Variance}
+\end{equation}
+其中$\text{SST}_j=\sum_{i=1}^n (x_{ij}-\bar{x}_j)^2$，$R_j^2$是$x_j$对所有其它自变量回归得到的$R^2$。
+\par 在假定(1)-(5)下，
+\begin{equation}
+    \hat{\sigma}^2=\text{SSR}/(n-k-1)
+\end{equation}
+是误差方差的无偏估计。其平方根$\hat{\sigma}$称回归标准误(standard error of regression, SER)，\textbf{不是}误差标准差的无偏估计。OLS斜率估计量的标准差(standard deviation)为
+\begin{equation}
+    \text{sd}(\hat{\beta}_j)=\sigma/\sqrt{\text{SST}_j(1-R_j^2)}
+\end{equation}
+其估计值（称$\hat{\beta}_j$的标准误）为：
+\begin{equation}
+    \text{se}(\hat{\beta}_j)=\hat{\sigma}/\sqrt{\text{SST}_j(1-R_j^2)}
+\end{equation}
+随着样本量的增大，其以$1/\sqrt{n}$速率收敛到0. 
+
+\subsection{Gauss-Markov定理}
+
+\par 在假定(1)-(5)下，对任何$j=0,1,\dots,k$，设$\Tilde{\beta}_j$是$\beta_j$的任一无偏估计量，且具有形式$\Tilde{\beta}_j=\sum_{i=1}^n w_{ij}y_i$，其中$w_{ij}$是自变量值的函数，则有
+\begin{equation}
+    \text{Var}(\Tilde{\beta}_j)\ge \text{Var}(\hat{\beta}_j)
+\end{equation}
+也即OLS估计量是最优（方差最小）的线性无偏估计量(best linear unbiased estimate)。
+\par 进一步，在假设(1)-(6)下，OLS估计量是最小方差无偏估计量（无需限定线性）。
+
+
+\subsection{总体参数的区间估计和假设检验}
+
+\subsubsection{t检验}
+\par 在假定(1)-(6)下，OLS斜率估计量抽样分布为正态分布：
+\begin{equation}
+    (\hat{\beta}_j-\beta_j)/\text{sd}(\hat{\beta}_j) \sim N(0, 1)
+\end{equation}
+\par 用标准误估计标准差，得到$t$分布：
+\begin{equation}
+    (\hat{\beta}_j-\beta_j)/\text{se}(\hat{\beta}_j) \sim t_{n-k-1}
+\end{equation}
+随着自由度增加，$t$分布会接近标准正态分布。当自由度大于120，可以使用正态分布的临界值。
+
+\par 总体参数$\beta_j$的\textbf{置信区间}为
+\begin{equation}
+    [\hat{\beta}_j-c\times \text{se}(\hat{\beta}_j),\hat{\beta}_j+c\times\text{se}(\hat{\beta}_j)]
+\end{equation}
+当置信水平为$\alpha$时，$c$为对应$t$分布的$(1+\alpha)/2$分位数。
+
+\par 设原假设$H_0: \beta_j=a_j$（最常见的情形是$a_j=0$），$t$统计量定义为$(\hat{\beta}_j-a_j)/\text{se}(\hat{\beta}_j)$。双侧备择假设(two-sided alternative)$H_1: \beta_j\neq a_j$对应双边检验(two-tailed test)，单侧备择假设(one-sided alternative)$H_1: \beta_j > a_j$（或$H_1: \beta_j < a_j$）对应单边检验(one-tailed test)。若拒绝原假设$H_0: \beta_j=0$，称$x_j$在给定显著性水平下是统计显著的。检验的$p$值定义为能拒绝原假设的最小显著性水平，即原假设成立时，统计量（双边检验时为统计量的绝对值）不小于观测值的概率。
+
+\par 除统计显著性外，还要关注变量的经济（实际）显著性(economic/practical significance)，即OLS斜率估计值的大小。大样本下容易得到统计显著性，即使斜率估计值代表的实际含义影响很小。
+\par 检验多个总体参数的线性关系，如$\beta_1=\beta_2$，可通过变量代换$\beta_1=\beta_2+\theta_1$，转化为检验$\theta_1$的统计显著性。
+
+\subsubsection{F检验}
+\par 检验总体参数的多个线性关系，称原模型为不受约束模型(unrestricted model)，代入多重约束后的模型为受约束模型(restricted model)，定义$F$统计量为
+\begin{equation}
+    F=\frac{(\text{SSR}_r-\text{SSR}_{ur})/q}{\text{SSR}_{ur}/(n-k-1)}
+\end{equation}
+其中$\text{SSR}_{ur}$,$\text{SSR}_{r}$分别为原模型和受约束模型的残差平方和，$q$为线性约束的个数，也即两模型的自由度之差。在假定(1)-(6)下，$F\sim F_{q,n-k-1}$.
+\par 一种常见情形是$q$个排除性约束:$H_0:\beta_{k-q+1}=0,\dots,\beta_{k}=0$，此时若拒绝原假设，称$x_{k-q+1},\dots,x_{k}$在给定显著性水平下联合显著。此时$F$统计量改写为
+\begin{equation}
+    F=\frac{(R_{ur}^2-R_{r}^2)/q}{(1-R_{ur}^2)/(n-k-1)}
+\end{equation}
+当$q=k$时，即$H_0:\beta_1=\dots=\beta_k=0$，有
+\begin{equation}
+    F=\frac{R^2/k}{(1-R^2)/(n-k-1)}
+\end{equation}
+这称为回归的整体显著性(overall significance of the regression)检验。
+
+\par 检验单个变量排除性假设的$F$统计量等于相应$t$统计量的平方，而$t_{n-k-1}^2$与$F_{1,n-k-1}$同分布，故二者等价。但对一组变量而言，可能出现每个变量均不显著但联合显著（如由于多重共线性），或单个显著变量与若干不显著变量的整体联合不显著。
+
+\subsubsection{Lagrange乘数检验}
+
+\par Lagrange乘数统计量(Lagrange multiplier statistic)也用于检验多个排除约束。设$H_0:\beta_{k-q+1}=0,\dots,\beta_{k}=0$。先估计受约束模型，得到残差$\Tilde{u}$，再将$\Tilde{u}$对所有自变量做回归，记其$R^2$为$R_u^2$。Lagrange乘数统计量定义为：
+\begin{equation}
+    LM=nR_u^2
+\end{equation}
+$n\to \infty$时依分布收敛于自由度为$q$的$\chi^2$分布。若LM大于卡方分布临界值，则拒绝原假设。
+
+\subsection{OLS估计量的渐近性质}
+
+\par OLS估计量的无偏性、有效性（Gauss-Markov定理）等属于有限样本性质（或精确性质）；渐近性质(asymptotic properties, 或大样本性质)关注样本容量趋于无穷大的情形。经济学界认为一致性（$n\to \infty$时依概率收敛到总体参数）是对估计量的基本要求。
+
+\par 在假定(1)-(3),(4')下，OLS估计量$\hat{\beta}_j$是${\beta}_j$的\textbf{一致估计量}， $j=0,1,\dots,k$. 事实上对于简单线性回归，斜率估计量的
+概率极限\begin{equation}
+    \text{plim}\hat{\beta}_1=\beta_1+\frac{\text{Cov}(x_1,u)}{\text{Var}(x_1)}
+\end{equation}
+右端第二项是误差与自变量相关导致的渐近偏误(asymptotic bias)。对于一般情形，与OLS斜率估计量期望的偏差类似，若$x_1$与$u$相关，其余变量与$x_1$和$u$都不相关，则只有$\hat{\beta}_1$不一致。
+
+\par 在假定(1)-(5)下，OLS估计量满足\textbf{渐近正态性}(asymptotic normality)。当$n \to \infty$,
+\par (a) $\sqrt{n}(\hat{\beta}_j-\beta_j)$依分布收敛到$N(0,\sigma^2/a_j^2)$, 其中$a_j^2=\text{plim}(\sum_{i=1}^n \hat{r}_{ij}^2/n)$，$\sigma^2/a_j^2$称为$\sqrt{n}(\hat{\beta}_j-\beta_j)$的渐近方差；
+\par (b) $\hat{\sigma}^2$是$\sigma^2=\text{Var}(u)$的一致估计量，从而$\hat{\sigma}$是$\sigma$的一致估计量；
+\par (c) $(\hat{\beta}_j-\beta_j)/\text{sd}(\hat{\beta}_j)$依分布收敛到$N(0,1)$；$(\hat{\beta}_j-\beta_j)/\text{se}(\hat{\beta}_j)$依分布收敛到$N(0,1)$.
+\par 这意味着大样本条件下无需假设(6)，OLS的置信区间估计、t检验、F检验可如常进行。
+
+\par 在假定(1)-(5)下，OLS估计量满足\textbf{渐近有效性}。考虑求解如下方程组得到的估计量：
+\begin{equation}
+    \sum_{i=1}^n g_j(x_{i1},\dots,x_{ik})(y_i-\Tilde{\beta}_0-\Tilde{\beta}_1x_{i1}-\dots-\Tilde{\beta}_kx_{ik})=0, j=0,1,\dots,k
+\end{equation}
+其中$g_j$是对自变量的任意函数，可以证明由此得到的估计量是一致的。在所有上述形式的估计量中，OLS估计量的$\sqrt{n}(\hat{\beta}_j-\beta_j)$具有最小的渐近方差。
+
+\subsection{预测区间估计}
+
+\par 设自变量取值$x_1=c_1,\dots,x_k=c_k$，令$\theta_0=\beta_0+\beta_1 c_1+\dots+\beta_k c_k$，则有$\theta_0=E(y\vert x_1=c_1,\dots,x_k=c_k)$。估计量$\hat{\theta}_0=\hat{\beta}_0+\hat{\beta}_1 c_1+\dots+\hat{\beta}_k c_k$给出$\theta_0$的无偏估计，其标准误由$y$对$x_1-c_1,\dots,x_k-c_k$回归截距项的标准误得到，由此可计算条件均值$\theta_0$的置信区间。
+
+\par 实际用于预测时，还需纳入误差的影响。设$y_0=\beta_0+\beta_1 c_1+\dots+\beta_k c_k+u_0$，估计量$\hat{y}_0=\hat{\theta}_0$，预测误差
+\begin{equation}
+    \hat{e}_0=\beta_0+\beta_1 c_1+\dots+\beta_k c_k+u_0-\hat{y}_0
+\end{equation}
+以样本内自变量取值为条件，其期望为0，方差为$\text{Var}(\hat{y}_0)+\sigma^2$。定义预测误差的标准误
+\begin{equation}
+    \text{se}(\hat{e}_0)=\sqrt{(\text{se}(\hat{y}_0))^2+\hat{\sigma}^2}
+\label{eq:pred_interval_se}
+\end{equation}
+在假定(1)-(6)下，$\hat{e}_0/\text{se}(\hat{e}_0)$服从$n-k-1$个自由度的$t$分布，由此可计算预测区间(prediction interval)。
+
+\subsection{过原点回归}
+\par 若利用最小二乘法估计不含截距项的模型，则残差的样本均值不一定为0；若$\beta_0\neq 0$，OLS的斜率估计量将有偏。若$\beta_0=0$，带截距回归的OLS斜率估计量方差比过原点回归大。
+
+\subsection{非线性关系建模}
+\par \textbf{常弹性模型}：$\ln y=\beta_0+\beta_1 \ln x$，解读为$x$每增加1\%，$y$增加$\beta_1$\%，$\beta_1$称为$y$对$x$的弹性。
+
+\par \textbf{常半弹性模型}：$\ln y=\beta_0+\beta_1 x$，解读为$x$每增加1，$y$增加100$\beta_1$\%，100$\beta_1$称为$y$对$x$的半弹性。
+
+\par 当模型为$\ln y=\beta_0+\beta_1 x_1+\dots+\beta_k x_k+u$时，由$\ln y_0$的预测区间上下界$[c_l,c_m]$可得$y_0$的预测区间$[e^{c_l},e^{c_m}]$；但点估计不能直接通过指数运算得到，在假定(1)-(6)下，
+\begin{equation}
+    E(y\vert \mathbf{x})=\exp(\sigma^2/2)\exp(\beta_0+\beta_1 x_1+\dots+\beta_k x_k)
+\end{equation}
+故预测值应调整为
+\begin{equation}
+    \hat{y}=\exp(\hat{\sigma}^2/2)\exp( \hat{\ln y})
+\end{equation}
+这一估计量一致但非无偏。若不满足正态性假设，预测值为
+\begin{align}
+&E(y\vert \mathbf{x})=\alpha_0\exp(\beta_0+\beta_1 x_1+\dots+\beta_k x_k)\\
+&\hat{y}=\hat{\alpha}_0\exp( \hat{\ln y})
+\end{align}
+$\alpha_0$的矩估计量是
+\begin{equation}
+    \hat{\alpha}_0=\frac{1}{n}\sum_{i=1}^n \exp(\hat{u}_i)
+\end{equation}
+这一估计量一致但非无偏，且总大于1（除非所有残差为0）。
+\par 令$m=\exp(\beta_0+\beta_1 x_1+\dots+\beta_k x_k)$，则$E(y\vert m)=\alpha_0 m$。记$\hat{m}_i=\exp (\hat{\ln y_i})$，利用过原点回归得到$\alpha_0$的估计量
+\begin{equation}
+    \check{\alpha}_0=\frac{\sum_{i=1}^n \hat{m}_i y_i}{\sum_{i=1}^n \hat{m}_i^2}
+\end{equation}
+这一估计量一致但非无偏，且可能小于1（此时可能意味着假定不满足）。
+\par 因变量为对数时的$R^2$不能和因变量为水平值的情形直接比较，解决方法有二：一是计算上述$\hat{m}_i$与$y_i$相关系数的平方（不依赖$\alpha_0$估计量的选取）；二是计算
+\begin{equation}
+    1-\frac{\sum_{i=1}^n(y_i-\hat{\alpha}_0\exp(\hat{\ln y_i}))^2}{\sum_{i=1}^n(y_i-\bar{y})^2}
+\end{equation}
+
+\par 当方程包含二次项或两个变量的乘积项时，变量的偏效应取决于自变量取值。平均偏效应(average partial effect)即自变量取样本均值时的偏效应。包含乘积项时称这两个变量具有\textbf{交互效应}(interaction effect)；通过将二次项改写为$x_1(x_2-c_2)$，则$x_1$的一次项系数可反映$x_2=c_2$时$x_1$的偏效应，同时可得到其标准误。
+
+\subsection{遗漏变量偏误}
+
+\par 若包含了无关变量，即总体模型中事实上某个$\beta_j=0$，其它自变量斜率估计值的无偏性不受影响。
+
+\par 若遗漏了有关变量，则所有OLS估计量都可能存在偏误，称遗漏变量偏误(omitted variable bias)。不失一般性，设遗漏变量$x_k$后的OLS估计量为$\Tilde{\beta}_j,j=0,1,\dots,k-1$，$x_k$对$x_1,\dots,x_{k-1}$回归的斜率估计值为$\Tilde{\delta}_j,j=1,\dots,k-1$，则有
+\begin{equation}
+    \Tilde{\beta}_j=\hat{\beta}_j+\hat{\beta}_k\Tilde{\delta}_j
+\end{equation}
+其关于自变量的条件期望为
+\begin{equation}
+    E(\Tilde{\beta}_j)=\beta_j+\beta_k\Tilde{\delta}_j
+\end{equation}
+故除非$x_k$是无关变量，或回归系数$\Tilde{\delta}_j=0$。有时可以利用$\beta_k$和$\Tilde{\delta}_j$的符号推测遗漏变量偏误的方向。
+
+\par 考虑遗漏一个变量后的简单线性回归，真实模型为$y=\beta_0+\beta_1x_1+\beta_2x_2+v$，满足假定(1)-(4)，若遗漏变量$x_2$，则有
+\begin{align}
+    &E(\Tilde{\beta}_1)=\beta_1+\beta_2\Tilde{\delta}_1\\ &\Tilde{\delta}_1=\frac{\sum_{i=1}^n (x_{i1}-\bar{x}_1)(x_{i2}-\bar{x}_2)}{\sum_{i=1}^n (x_{i1}-\bar{x}_1)^2}
+\end{align}
+而渐近极限
+\begin{align}
+    &\text{plim}\Tilde{\beta}_1=\beta_1+\beta_2\delta_1\\ &\delta_1=\frac{\text{Cov}(x_1,x_2)}{\text{Var}(x_1)}
+\end{align}
+右式第二项为遗漏变量带来的不一致性。$\Tilde{\delta}_1$代表$x_1,x_2$的样本相关性，而$\delta_1$代表它们在总体中的相关性。
+
+\par 对于OLS估计量的方差而言，遗漏变量会使其减小(\ref{eq:Variance})。但方差会随样本量的增大而减小，而期望的偏差不会减小（期望会越来越接近渐近极限），故大样本情况下更倾向于使用完整模型，而不是为避免多重共线性加剧遗漏变量。
+
+\subsection{函数形式误设}
+
+\par 函数形式误设(funcional form misspecification)指模型已包含了必要变量, 但变量的函数形式未正确设定, 如遗漏自变量的平方项、交互项, 或因变量水平值误设为对数等. 
+
+\subsection{组间异质性}
+
+\subsubsection{邹至庄(Chow)检验}
+\par 用于检验组间回归方程的差异，是F检验的一种特殊形式。设分组模型为：
+\begin{equation}
+y=\beta_{g,0}+\beta_{g,1}x_1+\dots+\beta_{g,k}x_k+u
+\end{equation}
+其中$g=1,2$。两方程可合写为包含1个虚拟变量、$k$个虚拟变量交互项的一个方程，自由度为$2k+2$。考虑对假设$H_0: \beta_{1,j}=\beta_{2,j},j=0,\dots,k$的F检验：
+\begin{equation}
+    F=\frac{(\text{SSR}_P-\text{SSR}_1-\text{SSR}_2)/(k+1)}{(\text{SSR}_1+\text{SSR}_2)/(n-2k-2)}
+\end{equation}
+其中$\text{SSR}_P$是两组样本合并估计方程的残差平方和。
+
+\subsection{异方差性}
+
+\par 异方差性不影响OLS估计量的无偏性, 但将导致Gauss-Markov定理不再成立；OLS估计量的方差（式\ref{eq:Variance}）有偏, 从而以此为基础的t统计量、F统计量不再服从相应的理论分布，且大样本也无法解决这一问题。
+\par 使用因变量的对数形式, 往往可缓解异方差性. 
+
+\subsubsection{异方差稳健推断}
+\par 在假定(1)-(4)下, $\operatorname{Var}(\hat{\beta}_j)$的一个渐近有效的估计量为
+\begin{equation}
+    \frac{\sum_{i=1}^n \hat{r}_{ij}^2\hat{u}_i^2}{\text{SSR}_j^2}
+\end{equation}
+其中$\hat{u}_i$为原回归残差; $\hat{r}_{ij}$为$x_j$对所有其它自变量回归的残差, $\text{SSR}_j^2$是这一回归的残差平方和. 其平方根称为异方差稳健的标准误, 可用于构造异方差稳健的t统计量. 
+
+\par 异方差稳健的F统计量没有简单形式. 异方差稳健的Lagrange乘数检验如下: 设$H_0: \beta_{k-q+1}=0,\dots, \beta_k=0$. 先估计受约束模型得到残差$\Tilde{u}$, 再将$x_{k-q+1}, \dots, x_k$分别对$x_1,\dots, x_{k-q}$回归, 得到残差$\Tilde{r}_1,\dots,\Tilde{r}_q$. 之后, 将1对$\Tilde{r}_1\Tilde{u},\dots,\Tilde{r}_q\Tilde{u}$过原点回归, 得到残差平方和$\mathrm{SSR}_u$. $H_0$下$n-\mathrm{SSR}_u$渐近服从自由度为$q$的$\chi^2$分布. 
+
+\par 上述异方差稳健修正适用于未知形式的异方差, 但仅在大样本情况下适用. 
+
+\subsubsection{Breusch-Pagan异方差检验}
+
+\par 在误差条件期望为0的假设下, $\operatorname{Var}(u\vert \textbf{x})=\mathrm{E}(u^2\vert \textbf{x})$, 同方差假设意味着$\mathrm{E}(u^2\vert \textbf{x})= \mathrm{E}(u^2)=\sigma^2$. 为检验异方差性, 可检验$u^2$的期望是否与一个或多个自变量相关. 
+\par 先估计原模型得到残差$\hat{u}$, 再将$\hat{u}^2$对所有自变量$x_1,\dots,x_k$回归（基于对相关变量的推测, 也可将$\hat{u}^2$对选定的部分自变量进行回归）, 用F统计量或Lagrange乘数统计量检验此方程的整体显著性. 若$p$值足够小, 则拒绝同方差性的原假设. 
+
+\subsubsection{White异方差检验}
+
+\par 先估计原模型得到残差$\hat{u}$和拟合值$\hat{y}$, 再将$\hat{u}^2$对$\hat{y}, \hat{y}^2$回归, 用F统计量或Lagrange乘数统计量检验此方程的整体显著性. 若$p$值足够小, 则拒绝同方差性的原假设. 
+\par 事实上, $\hat{y}, \hat{y}^2$是所有自变量及其二次项、交叉项的线性组合. White异方差检验的原始形式是在Breusch-Pagan异方差检验的基础上增加自变量的二次项、交叉项, 其出发点是$u^2$与所有自变量及其二次项、交叉项都不相关（比同方差假定弱）即可保证OLS标准误及相关检验统计量的的渐近有效性. 但这一方式在变量较多时会损失大量自由度.
+
+\par 对于存在函数形式误设的情形, 同方差也会使上述检验给出存在异方差性的结论. 因此应当先确认函数形式, 再检验异方差性. 
+
+\subsubsection{加权最小二乘估计}
+
+\par 假定已知异方差的形式$\operatorname{Var}(u\vert \mathbf{x})=\sigma^2 h(\mathbf{x})$, 记$h_i=h(\mathbf{x}_i)$, 则方程
+\begin{equation}
+    \frac{y_i}{\sqrt{h_i}}=\frac{\beta_0}{\sqrt{h_i}}+\beta_1\frac{x_{i1}}{\sqrt{h_i}}+\cdots+\beta_k\frac{x_{ik}}{\sqrt{h_i}}+\frac{u_i}{\sqrt{h_i}}
+\label{eq:wls}
+\end{equation}
+满足同方差假定, 其OLS估计量是最优线性无偏估计量. 对上式的OLS估计等价于原方程的加权最小二乘(Weighted Least Squares, WLS)估计, 即最小化加权残差平方和$\sum_{i=1}^n (y_i-\hat{y}_i)^2/h_i$. 此时的$R^2$由加权残差平方和与加权总平方和$\sum_{i=1}^n y_i^2/h_i$计算. 与式\ref{eq:pred_interval_se}类似的方法可得$\mathbf{x_0}$处预测误差的标准误为
+\begin{equation}
+    \mathrm{se}(\hat{e}_0)= \sqrt{(\mathrm{se}(\hat{y}_0))^2+\hat{\sigma}^2 h(\mathbf{x_0})}
+\end{equation}
+
+\par 当每个观测是分组（或地理区域）的平均值时, 若个体观测具有相同的方差$\sigma^2$, 且组内各观测误差两两无关（协方差为0）, 则分组观测的误差方差为$\sigma^2/m_i$（$m_i$为该分组的个体数量）, 此时有必要采用加权最小二乘法. 另一方面, 实际个体方程可能不满足同方差, 或组内误差存在相关, 此时可用OLS估计或WLS估计, 并报告异方差稳健的标准误. 
+
+\par 错误设定$h(\mathbf{x})$不影响WLS估计的无偏性和一致性（事实上，加权的误差与加权的自变量仍不相关）, 但会导致WLS标准误和检验统计量不再可靠\footnote{针对这一问题仍可以报告异方差稳健的标准误, 即模型(\ref{eq:wls}) OLS估计的异方差稳健标准误}; 且理论上不一定比OLS更有效. 但实践中在异方差性较严重的情况下, WLS标准误通常会比OLS更小. 
+
+\par 若OLS和WLS估计值都显著, 但符号不同或值差异很大, 可能指示函数形式误设. 事实上, 零条件均值假设不满足可能导致OLS、WLS产生不同的偏误. 
+
+\subsubsection{可行广义最小二乘估计}
+
+\par 在异方差形式未知的情况下, 可行广义最小二乘估计(Feasible Generalized Least Squares, FGLS)根据数据估计函数$h(\mathbf{x})$, 再用得到的方程计算$\hat{h}_i$, 作为WLS权重. 一种形式是
+\begin{equation}
+h(\mathbf{x})=\exp(\delta_0+\delta_1x_1+\cdots +\delta_kx_k)
+\end{equation}
+设$u^2=\sigma^2 \exp(\delta_0+\delta_1x_1+\cdots +\delta_kx_k)v$, $\mathrm{E}(v\vert \mathbf{x})=1$, 则有$\ln u^2=\alpha_0+\delta_1x_1+\cdots +\delta_kx_k+e$, $\mathrm{E}(e\vert \mathbf{x})=0$. 因此将$\ln \hat{u}^2$对$x_1,\dots,x_k$回归\footnote{该回归用于异方差检验时称为Park检验, 其缺陷是大样本下F统计量也不渐近服从F分布, 且需要$u$与$\mathbf{x}$独立的强原假设. 而FGLS只需要$\delta_j$的估计是一致的. }, 得到拟合值$\hat{g}_i$, 则$\hat{h}_i=\exp(\hat{g}_i)$. 另一种方式是$\ln \hat{u}^2$对$\hat{y}, \hat{y}^2$回归. 
+\par FGLS估计量不是无偏的; 但大样本下是一致的, 且比OLS更渐近有效, 相应检验统计量渐近服从t分布和F分布. 
+
+\subsection{多重共线性}
+
+\par 多重共线性(multicollinearity)指自变量之间高度相关（但不完全相关）。多重共线性不影响OLS估计量的无偏性，但会使其方差增大。
+\par 方差膨胀因子(variance inflation factor, VIF)定义为：
+\begin{equation}
+    \text{VIF}=1/(1-R_j^2)
+\end{equation}
+不应依据$R^2_j$或VIF值简单推断多重共线性的影响，因为OLS估计量的标准差还取决于误差方差和自变量的样本波动。此外若关注的变量与出现多重共线性的变量不相关，多重共线性不影响关注变量的方差。
+
+\subsection{关于实践的评注}
+\par 为得到以标准差为单位度量的偏效应，可先将所有自变量和因变量进行Z-score标准化（减去均值，除以标准差），此时得到的系数$\hat{b}_j$称为标准化系数，其与未标准化系数的关系是
+\begin{equation}
+    \hat{b}_j=\frac{\hat{\sigma}_j}{\hat{\sigma}_y}\hat{\beta}_j
+\end{equation}
+
+\par 对取值为正的变量取对数，往往可以缓和偏态性和异方差性，且变量的取值范围变小，估计值受异常值影响更小。
+
+\par 较低的$R^2$并不意味着无法得到准确的偏效应估计。只要未加入模型的解释因素与自变量无关（假定(4)成立），就不影响OLS斜率估计量的无偏性；样本量的增大也可抵消误差方差对估计量方差的影响。但较低的$R^2$会给预测带来困难。
+
+\par 若关注$x_1$对$y$的影响，而这种影响通过中间变量$x_2$实现，就不应将$x_2$加入模型。如吸烟对家庭医疗支出的影响，不应将去医院次数作为解释变量。判定依据是“其它条件不变”是否有意义。但对于影响$y$又与$x_1$无关的自变量，总可以将其加入模型以减少估计量的方差。
+
+\par 当总体参数$\theta$的估计量$\hat{\theta}$的标准误公式难以得到，或不是估计量标准差的较好近似，可采用自助法(bootstrap)得到标准误。从观测中有放回地抽取等量样本，重复$m$次（通常500-1000次），重复估计流程得到$\hat{\theta}^{(i)}(i=1,\dots,m)$，$\hat{\theta}^{(i)}$的样本标准差称为$\hat{\theta}$的自助法标准误。
+
+\par 定性信息可作为二值变量（也称虚拟变量，binary/dummy variable）加入模型；对于$m$类分类变量（分级等序数量类似处理），一般选其中一个为基组(base group)，加入$m-1$个虚拟变量。自变量中的虚拟变量度量不同分组的截距差异；虚拟变量与非虚拟变量的交互项度量不同分组的斜率差异。若因变量为二值变量，称为线性概率模型(linear probability model)，斜率系数度量了单位自变量增加导致的响应概率$P(y=1)$的变化，其缺陷是可能得到小于0或大于1的概率拟合值，且异方差性往往存在：
+\begin{equation}
+    \text{Var}(y\vert \textbf{x})=p(\textbf{x})(1-p(\textbf{x}))
+\end{equation}
+其中$p(\textbf{x})=\beta_0+\beta_1 x_1+\dots+\beta_kx_k$为成功概率. 其解决方法是使用异方差稳健标准误; 也可使用FGLS, 此时$\beta_j$的OLS估计即给出方差函数, 但需要对权重$\hat{h}_i=\hat{y}_i(1-\hat{y}_i)$进行特殊处理（如令小于等于0的$\hat{y}_i$为0.001, 大于于等于1的$\hat{y}_i$为0.999）. 
+
+\section{时间序列数据的线性回归模型}
+
+\section{面板数据的线性回归模型}

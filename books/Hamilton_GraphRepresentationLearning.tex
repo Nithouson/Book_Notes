@@ -1,0 +1,216 @@
+
+\chapter{图表示学习}
+\Large\textbf{Graph Representation Learning\footnote{本笔记亦主要参考Jure Leskovec图机器学习讲义(Stanford CS224W，2021)}}
+\par \emph{William L. Hamilton} \normalsize
+
+\section{导论}
+
+\par 图是描述和分析有关联(交互)实体的通用语言. 图机器学习的核心问题：如何利用关系结构进行更好的预测？
+
+\par 任务分类：
+\begin{itemize}
+    \item 节点级(Node level)：节点分类 （当已知图中部分节点类别，求其它节点类别时，称半监督节点分类）. 
+    \item 链接级(Link level)：链接预测（根据已知边预测其它节点对是否连边，如知识图谱补全，推荐系统中预测用户与物品的连接）
+    \item 子图级(Subgraph level)：社区探测
+    \item 图级(Graph level)：图分类（如分子性质预测），图生成，图演化模拟
+\end{itemize}
+
+\par 二部图的投影图(folded/projected graph)：设两个顶点独立集$U,V$，对$U$的投影图节点为$U$，$u_1,u_2\in U$连边当且仅当存在$v\in V$，$u_1,u_2$在二部图中都与$v$相连. 
+
+\par 异质图(heterogeneous graph)：区分不同类型节点和边.  $G=(V,E,R,T)$，边定义为$(v_i,r_{ij},v_j)\in E$, $r_{ij}\in R$是边类型，$T(v_i)$是节点类型. 在知识图谱中常用. 
+
+\par 稀疏图(sparse graph)：平均度远小于$N-1$. 大多数现实世界的网络都是稀疏图.
+
+\par 谱图论：无向图的Laplace矩阵定义为$L=D-A$，$A$, $D$分别为邻接矩阵和度矩阵，则$L$为对称半正定矩阵，最小特征值为0 ($L\mathbf{1}=D\mathbf{1}-A\mathbf{1}=0$). 事实上，对于任意列向量$\mathbf{x}$，
+\begin{align}
+\mathbf{x}^TL\mathbf{x}&=\sum_{i=1}^N d_ix_i^2-\sum_{i=1}^N\sum_{j=1}^N a_{ij}x_ix_j\\
+&=\frac{1}{2}\left(\sum_{i=1}^N d_ix_i^2-2\sum_{i=1}^N\sum_{j=1}^N a_{ij}x_ix_j+\sum_{j=1}^N d_jx_j^2\right)\\
+&=\frac{1}{2}\left(\sum_{i=1}^N \sum_{j\neq i}a_{ij}(x_i-x_j)^2\right)
+\end{align}
+上述结论对矩阵$I-D^{-1/2}AD^{-1/2}$仍然成立。类似可以证明$D+A$以及$I+D^{-1/2}AD^{-1/2}$也是对称半正定的\footnote{与Laplacian的情形相比，差的平方变为和的平方，若有自环还会多出$2\sum_{i=1}^N a_{ii}x_i^2$一项。}，从而$D^{-1/2}AD^{-1/2}$（及其方幂）的特征值均在$[-1,1]$，且最大特征值为1\footnote{GCN中使用的版本取$\tilde{A}=A+I$，并基于此计算度矩阵$\tilde{D}$和重归一化图拉普拉斯(renormalized graph Laplacian)矩阵$\hat{L}=\tilde{D}^{-1/2}\tilde{A}\tilde{D}^{-1/2}$。注意到上述证明不限制图中的自环，从而结论仍成立。}。
+
+\section{特征提取}
+
+\par 传统图机器学习方法需要人为定义节点、节点对、图的特征（表示为向量）用于训练. 
+
+\subsection{节点特征}
+
+度、中心性、Pagerank反映节点的重要性. 度、聚集系数、图元度向量描述节点所在局部的拓扑属性. 
+
+\par \textbf{度}(degree).
+
+\par \textbf{中心性}(centrality): 衡量节点在图中的重要性. 
+\par 特征向量中心性(eigenvector centrality)满足
+\begin{equation}
+    c_v=\frac{1}{\lambda}\sum_{u\in N(v)} c_u.
+\end{equation}
+其中$A$为简单无向图的邻接矩阵. 上式化为$\lambda \mathbf{c}=A\mathbf{c}$，即$\mathbf{c}$为$A$的特征向量. 一般取最大特征值对应特征向量\footnote{无向连通图的邻接矩阵不可约. Perron-Frobenius定理指出，不可约非负矩阵最大特征值为正且代数重数为1，从而该特征向量在乘一个常数意义下唯一. }. 
+\par 介中心性(betweenness centrality)：对节点$v$，定义为一对节点所有最短路径中包含$v$的路径所占比例，对所有不含$v$的节点对求和. 
+\par 接近中心性(closeness centrality)：对给定节点，定义为该节点到其余节点最短路径长度之和的倒数. 
+
+\par \textbf{聚集系数}(clustering coefficient)：对节点$v$，考虑其邻接节点（设有$k_v$个）的导出子图，其边数与$\binom{k_v}{2}$之比. 反映邻域连通程度. 
+
+\par \textbf{图元度向量}(graphlet degree vector)：图元即较小的连通有根图. 令根节点与给定节点对应，对每个图元统计与之同构的导出子图的数量\footnote{如考虑节点数2-5的图元，得到73维向量. }. 事实上度统计$K_2$的数量，聚集系数统计$K_3$的数量. 
+
+\par \textbf{Pagerank}：又称Google算法，用链接分析(link analysis)度量有向图节点重要性的代表算法. 设节点$i$的重要性为$r_i$，出度为$d_i$，并令
+\begin{equation}
+    r_j=\sum_{i\to j}\frac{r_i}{d_i}.
+\end{equation}
+定义随机邻接矩阵$M$，$M_{ji}=I[i\to j] \frac{1}{d_i}$，则其列和为1；记重要性向量为$\mathbf{r}$，则有
+\begin{equation}
+    \mathbf{r}=M\mathbf{r}.
+\end{equation}
+考虑无偏随机游走，$M$恰好为其转移概率矩阵，归一化后的$\mathbf{r}$为其平稳分布；$\mathbf{r}$同时为$M$特征值为1的特征向量. 
+\par 利用乘方迭代法求解$\mathbf{r}$：可以从均匀分布出发通过乘转移矩阵至收敛得到. 特别地，到达出度为0的节点时，下一步以$1/N$概率到达每个节点；为处理闭集（不指向集合外的顶点集合），以$\beta$概率沿基本规则运动，以$1-\beta$概率随机到访任一节点. $\beta$通常取0.8-0.9. 
+
+\par 个性化Pagerank (Personalized Pagerank)度量各节点到特定节点集合$S$的邻近性，随机游走时每步以$\alpha$概率回到$S$中随机节点（可指定不同概率）. 当$S$中只含一个节点时，称为带重启的随机游走(random walk with restarts). 可用于在用户-商品二部图中确定某一（些）商品的相似商品（此时每步游走事实上走两步，从商品到商品）. 
+
+\subsection{节点对特征}
+
+\par \textbf{距离}：网络最短距离. 
+\par \textbf{局部邻域重叠}：公共邻居数；
+\par Jaccard指数：
+\begin{equation}
+    \frac{\vert N(v_1)\cap N(v_2)\vert}{\vert N(v_1)\cup N(v_2)\vert}
+\end{equation}
+Adamic-Adar指数：
+\begin{equation}
+    \sum_{u\in N(v_1)\cap N(v_2)} \frac{1}{\log k_u}.
+\end{equation}
+局限性是如果没有公共邻居，局部邻域重叠总是0.
+
+\par \textbf{Katz指数}：对简单无向图邻接矩阵乘方，可得到一对节点间给定长度的路径数. 设$\beta \in (0,1)$为衰减因子，节点$v_i,v_j$的Katz指数定义为
+\begin{equation}
+    S_{ij}=\sum_{l=1}^\infty \beta^l A^l_{ij}.
+\end{equation}
+矩阵形式为
+\begin{equation}
+    S=\sum_{l=1}^\infty \beta^l A^l=(I-\beta A)^{-1}-I.
+\end{equation}
+
+\subsection{图特征}
+\par 图核(graph kernel)给出两个图的相似度: $K(G,G')=\Phi(G)^T \Phi(G')\in \mathbb{R}$.
+\par \textbf{图元核}(graphlet kernel)：计数图中图元的个数，这里的图元是无根图，且不一定连通. $K(G,G')=h_G^T h_{G'}$，其中$h_G$是$G$的图元计数向量（用各分量之和归一化）. 由于子图同构(subgraph isomorphism)是NP完全问题，此方法计算复杂度过高. 
+
+\par \textbf{Weisfeiler-Lehman核}：采用颜色调整法(color refinement)，初始所有节点赋相同颜色$c_0(v)$；每一步根据当前节点和邻接节点颜色Hash到一个新的颜色：
+\begin{equation}
+    c_{k+1}(v)=\text{HASH}(\{c_k(v),\{c_k(u)\}_{u\in N(v)}\}),
+\end{equation}
+从而$c_k(v)$汇总了$v$的$k$跳邻域中的信息. Weisfeiler-Lehman核的特征向量是$k$步后各颜色节点的计数向量，\emph{该向量也作为图同构的判别依据}，计算复杂度为$O(\vert E \vert)$.
+
+\section{图嵌入}
+
+\subsection{节点表示}
+\par 将图的每个节点映射到一个低维向量，使向量的相似度反映对应节点在图中的相似度. 这一过程可取代人工设计的特征，自动提取的表示向量可用于多种下游任务. 该向量可直接用于节点分类、聚类；两个节点向量的连接、Hadamard积、加和、距离等可用于链接预测. 
+
+\par 从编码-解码的角度看，编码器将一个节点映射为一个$d$维表示向量，解码器从两个向量得到对应节点的相似度（如向量内积）. 简单的编码器可以仅做“查表”，即学习一个$d\times N$矩阵$Z$，每一列为对应节点的表示向量. 
+
+\par 节点相似度的一种简单度量方式是其是否邻接，即要求$\mathbf{z}_v^T\mathbf{z}_u=A_{uv}$，$A$为无向图的邻接矩阵；亦即$Z^T Z=A$. 由于$d<<N$，上式难以严格成立，考虑$\min \|A-Z^T Z\|_2$. 可利用矩阵分解求解. 
+
+\par 不考虑节点特征，\textbf{随机游走法}将两个节点的相似度定义为它们在一次图上的随机游走中共现的概率. 给定随机游走策略$R$，从节点$u$出发进行固定（较短）长度的随机游走，访问节点的多重集记为$N_R(u)$；用softmax函数表示概率，采用最大似然目标函数优化节点表示：
+\begin{align}
+\mathcal{L}&=-\sum_{u\in V}\sum_{v \in N_R(u)} \log P(v \vert \mathbf{z}_u)\notag \\
+&=-\sum_{u\in V}\sum_{v \in N_R(u)}\log \frac{\exp(\mathbf{z}_u^T \mathbf{z}_v)}{\sum_{n\in V}\exp(\mathbf{z}_u^T \mathbf{z}_n)}
+\end{align}
+利用负采样(negative sampling)，上式每一项可近似为
+\begin{equation}
+    \log \sigma(\mathbf{z}_u^T \mathbf{z}_v)-\sum_{i=1}^k \log \sigma(\mathbf{z}_u^T \mathbf{z}_{n_i}).
+\end{equation}
+其中$\sigma(\cdot)$为Sigmoid函数；负样本$\{n_i\}_{i=1}^k$以节点度为概率随机抽样；理论上应取不在该游走上的节点，实际出于效率不加此限制；$k$一般取5-20（过少则估计不准确，过多则产生更大负样本偏差）. 采用随机梯度下降优化，每一步随机取节点$u$，对$-\sum_{v \in N_R(u)} \log P(v \vert \mathbf{z}_u)$求梯度，更新各表示向量. 
+
+\par \textbf{DeepWalk}采用无偏随机游走. \textbf{node2vec}采用有偏随机游走，以达到网络全局信息(DFS)与局部信息(BFS)的平衡：设$p,q$分别为返回(return)参数和进出(in-out)参数, 若上一步从$v$走到$w$，则当前步骤以概率$1/p$（非归一化概率，下同）回到$v$；以概率1到达$v$的每个其它相邻（且与$w$相邻）的节点；以概率$1/q$到达$v$的每个距离为2（且与$w$相邻）的节点\footnote{对于带权图，非归一化概率可以再乘上边权.}. $p$低则接近于BFS; $q$低则接近于DFS; $p=q=1$的情形即为DeepWalk. 
+
+\par 矩阵分解法和随机游走法的局限性：(1)加入新节点时，所有表示向量都要重新计算；(2)不能表达结构相似性（更多关注邻近性）；(3)不能纳入节点和边的特征. 图神经网络、深度表示学习可以解决上述问题. 
+
+\subsection{图（子图）表示}
+\par \textbf{简单加和法}：各节点表示向量求和（求平均）. 
+\par \textbf{虚拟节点法}：引入一个虚拟节点代替子图，利用节点表示方法得到子图表示. 
+\par \textbf{匿名随机游走}(anonymous random walk)：随机游走序列不记录具体节点，只记录与序列中其它节点相同或相异（如A-B-C-A-C与C-D-B-C-B均为12313）\footnote{长度为$n$的匿名随机游走的数量是Bell数(OEIS-A000110)，即将$n$个带标记元素划分成若干集合的方法数. }. 在图上进行若干次随机游走，用各匿名序列的概率分布作为图的表示；或以预测同一节点出发的相邻匿名序列为目标，同时学习每种匿名序列的表示和图的表示. 
+
+\section{消息传递}
+\par 社交网络中存在\textbf{相关性}(correlation)或\textbf{依赖性}(dependency)：相近的节点具有相同类别标签. 这一现象可从两个角度解释：同质相吸(homophily)即相似的个体更容易产生连接；社会影响(influence)使连接的个体趋向于同质. 以此为理论基础，半监督节点分类中节点类别不仅依赖于自身特征，也依赖于邻接节点的类别和特征. 消息传递框架下的半监督节点分类任务有如下代表性方法：
+
+\par \textbf{关系分类}(Relational Classification)：利用节点连接关系迭代计算未知节点的类别概率. 初始已知节点类别概率为one-hot向量，未知节点各类概率分别记为$1/K$（$K$为类别数）；每轮未知节点类别概率向量更新为邻接节点类别概率向量的加权和（可按边权加权）. 收敛后输出概率最大的类别. 这一方法没有纳入节点特征，且无收敛性保证. 
+
+\par \textbf{迭代分类}(Iterative Classification)：设节点$v$特征为$f_v$，邻域类别标签汇总为向量$z_v$（可以包括各类别计数或占比、出现最多的类别、类别数等,有向图出边入边分别统计），在训练集上训练两个分类器$\phi_1(f_v)$和$\phi_2(f_v,z_v)$；在测试集上先用$\phi_1$赋初始类别，每次迭代先更新所有$z_v$再用$\phi_2$更新测试集的类别标签，直到收敛. 只使用了邻接节点类别，且没有收敛性保证. 
+
+\par \textbf{修正平滑法}(Correct \& Smooth)：先将有标签节点作为训练集、验证集，训练基于节点特征预测各类别概率的基分类器；之后利用该分类器得到所有节点的类别概率. 假设基分类器分类结果的误差具有正自相关，后处理阶段包括修正、平滑两个步骤. 
+\par 设$D=\operatorname{diag}\{d_1,\dots,d_N\}$为度矩阵，定义归一化扩散矩阵(normalized diffusion matrix)为$\tilde{A}=D^{-1/2}AD^{-1/2}$，其中$A$为邻接矩阵。
+\par 修正步骤：设$E$为$N\times K$训练误差矩阵，对于标记节点$i$，$E_{ik}$为属于第$k$类的概率真值（0或1）与基分类器预测概率之差；对于非标记节点，对应行为0. 按下式更新误差若干次后，将误差的$s$倍加在基分类器预测概率上（$s$为超参数）；
+\begin{equation}
+    E \leftarrow (1-\alpha)E + \alpha \tilde{A}E.
+\end{equation}
+\par 平滑步骤：设$Z$为$N\times K$类别概率矩阵，对于标记节点$i$，$Z_{ik}$为属于第$k$类的概率真值（0或1）；对于非标记节点，$Z_{ik}$为修正步骤后的类别概率. 按下式更新误差若干次后，对每个节点输出概率最大的类别\footnote{平滑步骤可能使每个节点类别概率和不再为1. }. 
+\begin{equation}
+    Z \leftarrow (1-\alpha)Z + \alpha \tilde{A}Z.
+\end{equation}
+
+
+\section{图神经网络}
+
+\par 图神经网络\footnote{2005年Gori等人在论文\emph{A new model for learning in graph domains}中就已经提出了图神经网络这一说法。}提供了一种基于深度学习的节点（子图、图）嵌入方法，可与各种向量相似度函数结合. 
+
+\par 朴素方法：将邻接矩阵中与特定节点对应的一行与其特征拼接，输入多层感知机. 问题是与节点输入顺序有关；且不能用于不同节点数目的图. 
+
+\par 图的表示应具有\textbf{置换不变性}(permutation invariance)； 节点表示应具有\textbf{置换等变性}(permutation equivariance). 输入节点顺序重新排列的邻接矩阵和节点特征矩阵，输出图表示应相同，节点表示矩阵差一个置换（同一节点表示向量相同）. 图神经网络由一系列置换不变、置换等变的层组成. 
+
+\subsection{基本框架}
+\par 聚合邻域信息以构建节点特征. 节点$v$的0层表示是其特征本身； $k$层表示由其$k$跳邻域信息聚合得到，$k$跳邻域按消息传递方向构成计算图(computation graph). 每层首先汇总邻域信息，再通过神经网络，所有节点共享每层的网络参数. 以图卷积神经网络(graph convolutional network, GCN)为例，设节点$v$的$k$层表示为$h_v^{(k)}$，
+\begin{equation}
+    h_v^{(k+1)}=\sigma(W_k\sum_{u\in N(v)}\frac{h_u^{(k)}}{\vert N(v)\vert}+B_k h_v^{(k)}), k=0,1,\dots,K-1
+\end{equation}
+其中$W_k$,$B_k$是参数. 令$H^{(k)}=[h_1^{(k)},\dots, h_N^{(k)}]^T$，有
+\begin{equation}
+H^{(k+1)}=\sigma(D^{-1}AH^{(k)}W_k^T+H^{(k)}B_k^T), k=0,1,\dots,K-1.
+\end{equation}
+注意到基于邻接关系的消息传递和邻域聚合（池化）是置换等变的；由此定义的图神经网络可以迁移到新的节点和新的图. 
+
+\subsection{设计空间}
+\par 包括消息、聚合、层的堆叠、图增强、训练目标五个方面。
+\par \textbf{消息}(message)：对上一层节点表示的处理，如乘权重矩阵。为保持节点自身的上一层表示，通常采用与邻接节点不同的权重矩阵。此外为增强模型表达能力，可以用多层感知机取代单一线性层。
+\begin{equation}
+    m_u^{(l)}=\operatorname{MSG}^{(l)}(h_u^{(l-1)}).
+\end{equation}
+\par \textbf{聚合}(aggregation)：对邻域消息的聚合操作，如平均、求和、求最大。为保持节点自身的上一层表示，通常先聚合邻接节点表示，再与自身的表示求和或连接。
+\begin{equation}
+    h_v^{(l)}=\operatorname{CONCAT}(\operatorname{AGG}(\{m_u^{(l)}\vert u\in N(v)\}), m_v^{(l)}).
+\end{equation}
+消息和聚合构成了GNN的一层， 非线性激活函数可以加在消息或聚合后的表示上. 层中还可加入Batch normalization，Dropout（用在线性变换中）.
+\par \textbf{层的堆叠}：GNN层的顺序堆叠可能带来过平滑(over-smoothing)问题，即不同节点的表示趋于同质。原因是随层数增大，不同节点的多跳邻域出现大量重叠。因此GNN的层数不必过多，应用中层数比所需感受野略大即可。若需要提升模型表达能力，可在GNN层前后加入MLP层用于预处理和后处理；或加入skip connection（可理解为浅层网络和深度网络的集成）.
+
+\par \textbf{图增强}：包括图的特征增强和结构增强.
+\par 特征增强：当节点没有特征，需要添加one-hot的index向量或全为1的向量，前者维数过高($O(\vert V\vert)$)且无法迁移到新加入节点；后者无法区分节点，只能学习图的结构信息. 传统图机器学习中的节点特征也可加入，特别是GNN难以学习的特征，如节点所在回路的长度. 
+\par 结构增强：当图过于稀疏时，消息传递效率不高，可加入虚拟边（通常将二阶邻居连接），或加入与所有节点连接的虚拟节点以加快消息传递。当图过于稠密时，消息传递代价过高，可在邻域中采样若干节点进行消息传递（每层采样不同的邻接节点）。
+
+\subsection{训练流程}
+\par \textbf{预测头}(prediction head)将表示向量变换为所求输出. 以$k$路预测为例（$k$类分类或$k$个变量回归），节点预测可直接过线性层（乘$k\times d$矩阵）；边预测可连接后过线性层，或训练$k$个矩阵$A_i$，以$z_u^T A_i z_v$为第$i$维输出；图预测需要对各节点表示向量进行聚合，层次池化(hierarchical pooling)可增加聚合过程的区分度。
+\par \textbf{标签}：对于监督学习任务，可直接利用标签数据进行训练；对于非监督学习任务，可利用图的内部信息进行自监督学习(self-supervised learning)，如预测节点特征，两节点是否有链接等。
+
+\par \textbf{目标函数和评价指标}：与一般机器学习任务相同。
+
+\par \textbf{数据集划分}：包括transductive和inductive两种设置，前者在训练、验证、测试时整个图都可见，只对节点标签进行划分，模型在同一个图的节点之间进行迁移；后者去除训练、验证、测试集之间的边，得到多个彼此不连通的子图，模型可以在图之间迁移. 图级别的预测任务只能采用inductive方式. 
+\par 链接预测任务需要将训练集中的边划分为消息边(message link)和监督边(supervision link)，前者用于消息传递，后者不输入到GNN中，由GNN预测是否存在，用于计算目标函数. 训练时已知训练消息边，预测训练监督边；验证时已知训练消息边、训练监督边，预测验证边；测试时已知训练消息边、训练监督边、验证边，预测测试边。
+
+\subsection{常见模型}
+\par \textbf{GraphSAGE}：
+\begin{equation}
+    h_v^{(l)}=\sigma(W_l \cdot \operatorname{CONCAT}(h_v^{(l-1)},\operatorname{AGG}(\{h_u^{(l-1)}\vert u\in N(v)\}))).
+\end{equation}
+其中邻域聚合AGG可以是取平均；先过MLP再平均（求最大）；邻接节点随机重排后过LSTM. 对每层得到的表示使用$l_2$归一化。
+\par \textbf{图注意力网络}(Graph Attention Network, GAT)：
+\begin{equation}
+    h_v^{(l)}=\sigma(\sum_{u\in N(v)}\alpha_{vu}W_l h_u^{(l-1)} ).
+\end{equation}
+其中$\alpha_{vu}$代表$u$对$v$的重要性。训练一个注意力函数$a$，使得
+\begin{equation}
+    e_{vu}=a(W_l h_v^{(l-1)},W_l h_u^{(l-1)}),
+\end{equation}
+$e_{vu}$归一化得到$a_{vu}$，使$\sum_{u\in N(v)}a_{vu}=1$. $a$的形式可以自由设定（如输入拼接消息的单隐层神经网络），其参数随权重矩阵$W$一起训练\footnote{若图中$(u,v)$边有属性信息$r_{vu}$，也可以在函数$a$中加入参数$V_lr_{vu}$，其中$V_l$为可训练参数。参见Liu et al., Learning Geo-Contextual Embeddings for Commuting Flow Prediction, AAAI 2020.}。使用多头注意力(multi-head attention)时，同时训练多个注意力函数$a_i$，使用每个注意力函数分别计算表示向量$h_v^{(l)}[i]$，最后将表示向量聚合。
+
+\par \textbf{与其它神经网络的关系}：CNN可以视为邻域节点数量和排序固定的GNN，$n\times n$卷积对应$n^2$个不同图卷积参数矩阵；Transformer可以视为全连接的单词图(word graph)上的GNN.
+
+
+\section{图生成模型}
+
+
+\section{其它主题}

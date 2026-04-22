@@ -1,0 +1,38 @@
+\chapter{素数之恋} \label{chap:rh}
+\Large\textbf{Prime Obsession: Bernhard Riemann and the Greatest Unsolved Problem in Mathematics}
+\par \emph{John Derbyshire} \normalsize
+
+\par 黎曼假设来源于Bernhard Riemann在1859年因当选柏林科学院通讯院士提交的论文《论小于一个给定值的素数个数》。欧拉定义$\zeta$函数为
+\begin{equation}
+    \zeta(s)=\sum_{n=1}^\infty \frac{1}{n^s}=\prod_{p\, \text{prime}}\frac{1}{1-(\frac{1}{p})^s}, s>1
+\end{equation}
+第二个等号称为欧拉积公式。黎曼考虑其复值函数形式$\zeta(z)$，其在$\text{Re}z>1$收敛；并将其解析延拓到$\mathbb{C}/\{z=1\}$，得到的函数称为黎曼$\zeta$函数；该函数在所有负偶数取值为0，称平凡零点；另有无穷多个非平凡零点位于$0<\text{Re}z<1$的临界带内，且关于实轴、关于临界线$\text{Re}z=1/2$对称出现。Hardy于1914年证明了位于临界线上的非平凡零点有无穷多个。黎曼假设断言非平凡零点均在临界线上。目前已用计算机验证了猜想对（按模长升序排列的）前15亿个零点成立；另一方面，E. Artin, A. Weil, P. Deligne在有限域上发展了类似于黎曼假设的结果。
+\par 定义素数的计数函数$\pi(x)=\#\{p\le x\vert p\, \text{prime}\}$，再令
+\begin{equation}
+    J(x)=\sum_{n=1}^\infty \frac{1}{n}\pi(x^{\frac{1}{n}}), x>0
+\end{equation}
+注意对给定的$x$，$J(x)$为有限项的和。由Möbius反演得
+\begin{equation}
+    \pi(x)=\sum_{n=1}^\infty \frac{\mu(n)}{n}J(x^{\frac{1}{n}})
+\end{equation}
+其中$\mu(n)$是Möbius函数。黎曼将欧拉积公式表达为积分形式：
+\begin{equation}
+    \frac{1}{s}\ln\zeta(s)=\int_0^\infty J(x)x^{-s-1}\mathrm{d}x
+\end{equation}
+这导向黎曼1859年论文的主要结果（由von Mangoldt于1895年证明）
+\begin{equation}
+    J(x)=Li(x)-\sum_\rho Li(x^\rho)-\ln 2 +\int_x^\infty \frac{1}{t(t^2-1)\ln t}\mathrm{d}t
+\end{equation}
+其中$Li(x)=\int_0^x \frac{1}{\ln t}\mathrm{d}t$, $\rho$取遍$\zeta(z)$的所有非平凡零点，即$\pi(x)$与$\zeta(z)$的非平凡零点密切相关。事实上，1896年Hadamard和de la Vallée Poussin独立证明素数定理$\pi(x)\sim Li(x)$，即依赖黎曼假设的弱化结果：非平凡零点满足$\text{Re} z<1$。1901年von Koch证明，如果黎曼假设成立，那么有
+\begin{equation}
+    \pi(x)=Li(x)+O(\sqrt{x}\ln x)
+\end{equation}
+事实上该命题与黎曼假设等价。基于
+\begin{equation}
+    \frac{1}{\zeta(s)}=\sum_{n=1}^\infty \frac{\mu(n)}{n^s}
+\end{equation}
+黎曼假设的另一等价命题是
+\begin{equation}
+    \sum_{k=1}^n\mu(k)=O(n^{1/2+\epsilon}), \forall \epsilon>0
+\end{equation}
+\par Littlewood于1914年证明随x增大，$Li(x)-\pi(x)$由正变负，再由负变正，由此反复无穷多次（尽管第一次由正变负的位置非常大，目前计算达不到）。

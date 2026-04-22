@@ -1,0 +1,56 @@
+
+\chapter{数理统计学讲义}
+
+\par \Large \emph{陈家鼎\ 孙山泽\ 李东风\ 刘力平} 
+
+\normalsize
+
+\par 数理统计学采用随机抽样法获得样本，并从样本推断总体的性质。统计推断主要包括两类问题：估计和假设检验。
+\par 当样本$X_1,\dots, X_n$作为随机变量相互独立且与总体$X$同分布，称为简单随机样本。样本的函数$g(X_1,\dots, X_n)$称为统计量。
+\par \textbf{发展简史}：20世纪以前描述性统计占主导地位（最小二乘法，正态分布，$\chi^2$分布，回归分析）；20世纪初到二战结束，数理统计学蓬勃发展并达到成熟（t分布，最大似然估计，方差分析，假设检验，置信区间，时间序列分析）；战后继续在理论和应用方向发展（统计决策理论，非线性滤波，贝叶斯学派兴起，计算机的应用）。
+
+\section{估计}
+
+\subsection{总体参数的估计}
+
+设随机变量$X$的概率分布函数为$F(x,\boldsymbol{\theta})$，给定$X$的样本$x_1,\dots,x_n$，要求估计参数$\boldsymbol{\theta}$。
+
+\subsubsection{估计量的评价标准}
+
+\par \textbf{相合与强相合}：当样本量$n\to +\infty$，若估计量依概率收敛到真值，称其有相合性；若估计量几乎必然（以概率1）收敛到真值，称其有强相合性。
+
+\subsubsection{最大似然估计}
+
+\par 由Ronald A. Fisher于1912年提出。设X的概率密度函数（离散随机变量为概率函数）为$f(x,\boldsymbol{\theta})$，则样本的联合密度函数为
+\begin{equation}
+L(x_1,\dots,x_n,\boldsymbol{\theta})=\prod_{i=1}^n f(x_i,\boldsymbol{\theta})
+\end{equation}
+若估计量$\hat{\boldsymbol{\theta}}=\boldsymbol{\varphi}(x_1,\dots,x_n)$满足
+\begin{equation}
+L(x_1,\dots,x_n,\hat{\boldsymbol{\theta}})=\sup_{\boldsymbol{\theta}}L(x_1,\dots,x_n,\boldsymbol{\theta})
+\end{equation}
+则称$\hat{\boldsymbol{\theta}}$是${\boldsymbol{\theta}}$的最大似然估计。上述条件等价于对数似然函数$\ln L(x_1,\dots,x_n,\boldsymbol{\theta})$的最大化。
+
+\par 常见概率分布的最大似然估计：
+\begin{itemize}
+\item Bernoulli分布：$\hat{p}=\bar{x}=\sum_{i=1}^n x_i$.
+\item 指数分布$\mathcal{E}(\lambda)$：$\hat{\lambda}=n/\sum_{i=1}^n x_i$.
+\item 正态分布$\mathcal{N}(\mu,\sigma^2)$：$\hat{\mu}=\bar{x}$, $\hat{\sigma}^2=\frac{1}{n}\sum_{i=1}^n (x_i-\bar{x})^2$.
+\item 均匀分布$\mathcal{U}(a,b)$：$\hat{a}=\min_i x_i$, $\hat{b}=\max_i x_i$.
+\end{itemize}
+上述最大似然估计量都是强相合估计，其中Bermoulli分布、指数分布、正态分布的情形可由强大数律导出。
+
+
+\subsubsection{矩估计}
+
+\par 由Karl Pearson于1894年提出。设$\boldsymbol{\theta}=(\theta_1,\dots,\theta_m)$，$X$的1至$m$阶原点矩存在，记为$V_k=EX^k=g_k(\theta_1,\dots,\theta_m)$, $k=1,\dots,m$. 若能反解得到$\theta_j=f_j(V_1,\dots,V_m)$，$j=1,\dots,m$，则代入样本矩$\Tilde{V}_k=\frac{1}{n}\sum_{i=1}^n x_i^k$，即得到参数的矩估计。有时也用中心矩$E(X-EX)^k$做矩估计。由强大数律，样本矩几乎必然收敛到总体矩；故当所有$f_j$为连续函数时，矩估计量是强相合的。
+
+\par 正态分布的矩估计与最大似然估计一致，但这并非普遍情形。
+
+\section{假设检验}
+
+\subsection{补充}
+
+\subsubsection{Mann-Whitney U检验}
+
+\subsubsection{Kolmogorov–Smirnov检验}
