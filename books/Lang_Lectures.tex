@@ -1,5 +1,25 @@
 \chapter{Serge Lang演讲录}
 
-\Large\textbf{MATH! Encounters with High School Students}
+\Large\textbf{MATH! Encounters with High School Students}\\
+\Large\textbf{Math Talks for Undergraduates}
 \par \emph{Serge Lang} \normalsize
 
+\textbf{圆的周长、面积关系}：证法一：考虑半径为1的圆，用内接正$n$边形逼近圆, 设每个三角形的底为$b_n$, 高为$l_n$. 已知圆的周长为$2\pi$, 则面积$\lim_{n\to \infty} \frac{1}{2} nb_nl_n = \pi$. 用网格逼近法说明圆半径放大为$r$倍时，面积为$r^2$倍.
+
+证法二：已知圆的面积为$\pi r^2$, 考虑内径$r$, 外径$r+h$的环形，其面积$S$满足
+\begin{equation}
+    C(r)h < 2\pi rh + \pi h^2 < C(r+h)h
+\end{equation}
+同除$h$并令$h\to 0$, 得$C(r)=2\pi r$. 
+
+\textbf{球的体积}：考虑半径为1的半球，沿高均分为$n$层，每层用圆柱逼近。
+\begin{equation}
+V_n = \frac{\pi}{n} \sum_{i=1}^n \left(1-\frac{i^2}{n^2}\right) = \pi - \frac{\pi}{n^3} \sum_{i=1}^n i^2 \to \frac{2\pi}{3}, n\to \infty
+\end{equation}
+为直观说明$\frac{\sum_i i^2}{n^3} \to 1/3$, 考虑立方体切割为$n\times n\times n$个小块，求和项占据以一个面为底、对面顶点为顶点的四棱锥。
+
+\textbf{球的表面积}：类似圆的周长证法二，已知球的面积为$\frac{4}{3}\pi r^3$, 考虑内径$r$, 外径$r+h$的球壳，其体积$V$满足
+\begin{equation}
+    S(r)h < 4\pi r^2h+4\pi rh^2+\frac{4}{3}\pi h^3  < S(r+h)h
+\end{equation}
+同除$h$并令$h\to 0$, 得$V(r)=4\pi r^2$. 
